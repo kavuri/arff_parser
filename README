@@ -4,7 +4,7 @@ WEKA is a powerful tool, but sometimes I want to look at the datasets in a more 
 
 Usage:
 
-./arff_parser.py [filename1.arff filename2.arff ... ] [-json | -xml] [--debug] 
+./arff_parser.py [filename1.arff filename2.arff ...  | filename1.json] [-json | -xml |-arff] [--debug] 
 
 # Debug mode will print a variable dump of the schema read in. Default value is False.
 
@@ -25,6 +25,16 @@ Expects:
 		[attr1,attr2,...]
 		[attr1,attr2,...]
 		[attr1,attr2,...]
+		
+	- a JSON file ('some-filename.json') formatted as follows:
+	
+		{"data":[
+			{attr1:val1,attr2:val2...},
+			{attr1:val1,attr2:val2...},
+			{attr1:val1,attr2:val2...},
+			...
+			]
+		}	
 		
 		
 Outputs:
@@ -75,5 +85,21 @@ Outputs:
 				...
 			</data>
 		</dataset>
+		
+	-arff
+			@relation <filename>
+		
+		% Comments (ignored)
+		
+		@attribute1 [{value1,value2,value3} | datatype] 
+		@attribute2 [{value1,value2,value3} | datatype] 
+		...
+		
+		@data
+		[attr1,attr2,...]
+		[attr1,attr2,...]
+		[attr1,attr2,...]
+		[attr1,attr2,...]
+		
 	
 	
