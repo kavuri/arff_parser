@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import sys,json
+import sys,json,arff
 
 try:
     import xml.etree.cElementTree as ET
@@ -11,8 +11,8 @@ FILE_ERROR=0
 OPTION_ERROR=1
 OTHER_ERROR=2
 DEBUG = False
-legal_options = {"formats":["-xml","-json"],"debug":["--debug"]}
-error_array = ["Invalid file extension - expects '<filename>.arff'","Invalid option - expects '-json' or '-xml'.","The file format is invalid."]
+legal_options = {"formats":["-xml","-json","-arff"],"debug":["--debug"]}
+error_array = ["Invalid file extension - expects '<filename>.arff'","Invalid option - expects '-json' , '-arff' or '-xml'.","The file format is invalid."]
 errors = open("stderr","w")
 error_log = []
 line_count = 0
@@ -98,7 +98,7 @@ def has_valid_extension(path):
 	parts = filename.split(".")
 	if(len(parts)<1):
 		return False
-	elif(parts[len(parts)-1]=="arff"):
+	elif(parts[len(parts)-1]=="arff" or parts[len(parts)-1]=="json" ):
 		return True
 	else:
 		return False
@@ -127,16 +127,23 @@ def name_from_path(path):
 def output_json(schema,outfile):
 	outfile.write(json.dumps(schema))
 
-def process(filename, opts):
-	readdata = False
+def process(filename, opts):	
 	handle = filename.split(".")[0] 
-	if "-json" in opts:
-		handle = handle + ".json"
-	else:
-		handle = handle + ".xml"
 	if "--debug" in opts:
-		DEBUG = True
-	infile = open(filename,'r')
+			DEBUG = True
+	if "-arff" in opts:
+		handle = handle + ".arff" 
+		makeArff(filename,handle,opts)
+	else:	
+		if "-json" in opts:
+			handle = handle + ".json"	
+		else:
+			handle = handle + ".xml"
+		makeFile(filename,handle,opts)
+
+def makeFile(filename,handle,opts):	
+	readdata = False
+	infile = open(filename,'r') 
 	outfile = open(handle,'w')
 	schema = {"relation":"","attributes":[],"data":[]}
 	for line in infile:
@@ -155,9 +162,7 @@ def process(filename, opts):
 			elif(args[0]=="@data"):
 				readdata=True
 		elif(readdata):
-			schema["data"].append(line.strip())
-	if(DEBUG):
-		show_schema(schema)
+			schema["data"].append(line.strip())	
 	names = []
 	data = []
 	attrs = schema["attributes"]
@@ -170,7 +175,27 @@ def process(filename, opts):
 			entry[name] = row[names.index(name)]
 		data.append(entry)
 	schema["data"] = data
-	build_output(schema,outfile,opts)
+	build_output(schema,outfile,opts)	
+
+def makeArff(filename,handle,opts):
+	readdata = False
+	dataOut= []
+	attributesOut=[]
+	relation = filename.split(".")[0] 
+	outfile = open(handle,'w')
+	with open(filename) as data_file: 
+		dataIn = json.load(data_file)		
+	for entry in dataIn["data"]:			
+		values = []
+		attributes = []
+		for value in entry:			
+			attributes.append(value)
+			if isinstance(entry[value], unicode):
+				entry[value] = entry[value].encode('ascii','ignore')										
+			values.append(entry[value])
+		dataOut.append(values)
+		attributesOut.append(attributes)	
+	arff.dump(outfile, dataOut, relation=relation, names=attributesOut[0])
 
 def show_schema(schema):
 	"""debug"""
