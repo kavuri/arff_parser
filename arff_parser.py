@@ -182,7 +182,6 @@ def makeArff(filename,handle,opts):
 	dataOut= []
 	attributesOut=[]
 	relation = filename.split(".")[0] 
-	outfile = open(handle,'w')
 	with open(filename) as data_file: 
 		dataIn = json.load(data_file)		
 	for entry in dataIn["data"]:			
@@ -195,7 +194,7 @@ def makeArff(filename,handle,opts):
 			values.append(entry[value])
 		dataOut.append(values)
 		attributesOut.append(attributes)	
-	arff.dump(outfile, dataOut, relation=relation, names=attributesOut[0])
+	arff.dump(handle, dataOut, relation=relation, names=attributesOut[0])
 
 def show_schema(schema):
 	"""debug"""
